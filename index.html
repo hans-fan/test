@@ -75,7 +75,6 @@
             captureButton.style.display = 'none';
 
             setTimeout(() => {
-              // Capture the AR scene
               scene.components.screenshot.capture('perspective');
 
               // Flash effect
@@ -109,7 +108,7 @@
           scene.addEventListener('screenshot-ready', (e) => {
             const screenshot = e.detail.src;
 
-            // Create a link to download the screenshot
+            // Download the screenshot
             const link = document.createElement('a');
             link.href = screenshot;
             link.download = 'AR_Cat_Photo.png';

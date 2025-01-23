@@ -23,7 +23,7 @@
             <a-assets>
                 <a-asset-item
                     id="animated-asset"
-                    src="./asset.glb"
+                    src="assets/asset.glb"
                 ></a-asset-item>
             </a-assets>
 
@@ -31,7 +31,7 @@
                 id="animated-marker"
                 type="pattern"
                 preset="custom"
-                url="./marker.patt"
+                url="assets/marker.patt"
                 raycaster="objects: .clickable"
                 emitevents="true"
                 cursor="fuse: false; rayOrigin: mouse;"
@@ -75,6 +75,7 @@
             captureButton.style.display = 'none';
 
             setTimeout(() => {
+              // Capture the AR scene
               scene.components.screenshot.capture('perspective');
 
               // Flash effect
@@ -108,7 +109,7 @@
           scene.addEventListener('screenshot-ready', (e) => {
             const screenshot = e.detail.src;
 
-            // Download the screenshot
+            // Create a link to download the screenshot
             const link = document.createElement('a');
             link.href = screenshot;
             link.download = 'AR_Cat_Photo.png';

@@ -7,6 +7,7 @@
         <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
         <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
         <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.0.0-rc.7/dist/html2canvas.min.js"></script>
     </head>
 
     <body style="margin: 0; overflow: hidden;">
@@ -66,78 +67,30 @@
           📸 Capture Photo
         </button>
 
-        <!-- Canvas for Photo Capture -->
-        <canvas id="photoCanvas" style="display: none;"></canvas>
-
         <!-- Photo Capture Script -->
         <script>
-          const scene = document.querySelector('a-scene');
           const captureButton = document.getElementById('captureButton');
-          const photoCanvas = document.getElementById('photoCanvas');
-          const context = photoCanvas.getContext('2d');
 
           captureButton.addEventListener('click', () => {
             captureButton.style.display = 'none';
 
             setTimeout(() => {
-              // Capture the AR scene
-              scene.components.screenshot.capture('perspective');
+              html2canvas(document.body).then(canvas => {
+                // Convert the canvas to a data URL
+                const screenshot = canvas.toDataURL('image/png');
 
-              // Flash effect
-              const flash = document.createElement('div');
-              flash.style.position = 'absolute';
-              flash.style.top = '0';
-              flash.style.left = '0';
-              flash.style.width = '100%';
-              flash.style.height = '100%';
-              flash.style.backgroundColor = 'white';
-              flash.style.opacity = '0';
-              flash.style.zIndex = '2';
-              flash.style.transition = 'opacity 0.3s';
-              document.body.appendChild(flash);
-              setTimeout(() => {
-                flash.style.opacity = '1';
-                setTimeout(() => {
-                  flash.style.opacity = '0';
-                  setTimeout(() => {
-                    document.body.removeChild(flash);
-                  }, 300);
-                }, 100);
-              }, 100);
+                // Create a link to download the screenshot
+                const link = document.createElement('a');
+                link.href = screenshot;
+                link.download = 'AR_Cat_Photo.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
 
-              setTimeout(() => {
+                // Show the capture button again
                 captureButton.style.display = 'block';
-              }, 500);
+              });
             }, 100);
-          });
-
-          scene.addEventListener('screenshot-ready', (e) => {
-            const screenshot = e.detail.src;
-
-            // Set canvas dimensions
-            photoCanvas.width = window.innerWidth;
-            photoCanvas.height = window.innerHeight;
-
-            // Draw the camera feed onto the canvas
-            const video = document.querySelector('video');
-            if (video) {
-              context.drawImage(video, 0, 0, photoCanvas.width, photoCanvas.height);
-            }
-
-            // Draw the AR content on top of the camera feed
-            const arImage = new Image();
-            arImage.onload = () => {
-              context.drawImage(arImage, 0, 0);
-              
-              // Create a link to download the combined image
-              const link = document.createElement('a');
-              link.href = photoCanvas.toDataURL('image/png');
-              link.download = 'AR_Cat_Photo.png';
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-            };
-            arImage.src = screenshot;
           });
         </script>
     </body>

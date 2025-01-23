@@ -14,7 +14,7 @@
             vr-mode-ui="enabled: false;"
             loading-screen="enabled: false;"
             renderer="logarithmicDepthBuffer: true;"
-            arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; videoTexture: true;"
+            arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
             id="scene"
             embedded
             gesture-detector
@@ -68,53 +68,39 @@
 
         <!-- Photo Capture Script -->
         <script>
-          const scene = document.querySelector('a-scene');
           const captureButton = document.getElementById('captureButton');
 
-          captureButton.addEventListener('click', () => {
-            captureButton.style.display = 'none';
+          captureButton.addEventListener('click', async () => {
+            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
 
-            setTimeout(() => {
-              scene.components.screenshot.capture('perspective');
+            // Create video element to capture stream
+            const video = document.createElement('video');
+            video.style.display = 'none';
+            document.body.appendChild(video);
+            video.srcObject = stream;
+            video.play();
 
-              // Flash effect
-              const flash = document.createElement('div');
-              flash.style.position = 'absolute';
-              flash.style.top = '0';
-              flash.style.left = '0';
-              flash.style.width = '100%';
-              flash.style.height = '100%';
-              flash.style.backgroundColor = 'white';
-              flash.style.opacity = '0';
-              flash.style.zIndex = '2';
-              flash.style.transition = 'opacity 0.3s';
-              document.body.appendChild(flash);
-              setTimeout(() => {
-                flash.style.opacity = '1';
-                setTimeout(() => {
-                  flash.style.opacity = '0';
-                  setTimeout(() => {
-                    document.body.removeChild(flash);
-                  }, 300);
-                }, 100);
-              }, 100);
+            // Capture frame from video stream
+            video.addEventListener('loadeddata', () => {
+              const canvas = document.createElement('canvas');
+              const context = canvas.getContext('2d');
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              context.drawImage(video, 0, 0, canvas.width, canvas.height);
+              
+              // Download the captured image
+              const dataURL = canvas.toDataURL('image/png');
+              const link = document.createElement('a');
+              link.href = dataURL;
+              link.download = 'AR_Cat_Photo.png';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
 
-              setTimeout(() => {
-                captureButton.style.display = 'block';
-              }, 500);
-            }, 100);
-          });
-
-          scene.addEventListener('screenshot-ready', (e) => {
-            const screenshot = e.detail.src;
-
-            // Download the screenshot
-            const link = document.createElement('a');
-            link.href = screenshot;
-            link.download = 'AR_Cat_Photo.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+              // Stop the video stream
+              stream.getTracks().forEach(track => track.stop());
+              document.body.removeChild(video);
+            });
           });
         </script>
     </body>

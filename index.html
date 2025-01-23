@@ -7,7 +7,6 @@
         <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
         <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
         <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.0.0-rc.7/dist/html2canvas.min.js"></script>
     </head>
 
     <body style="margin: 0; overflow: hidden;">
@@ -69,28 +68,54 @@
 
         <!-- Photo Capture Script -->
         <script>
+          const scene = document.querySelector('a-scene');
           const captureButton = document.getElementById('captureButton');
 
           captureButton.addEventListener('click', () => {
             captureButton.style.display = 'none';
 
             setTimeout(() => {
-              html2canvas(document.body).then(canvas => {
-                // Convert the canvas to a data URL
-                const screenshot = canvas.toDataURL('image/png');
+              // Capture the AR scene
+              scene.components.screenshot.capture('perspective');
 
-                // Create a link to download the screenshot
-                const link = document.createElement('a');
-                link.href = screenshot;
-                link.download = 'AR_Cat_Photo.png';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+              // Flash effect
+              const flash = document.createElement('div');
+              flash.style.position = 'absolute';
+              flash.style.top = '0';
+              flash.style.left = '0';
+              flash.style.width = '100%';
+              flash.style.height = '100%';
+              flash.style.backgroundColor = 'white';
+              flash.style.opacity = '0';
+              flash.style.zIndex = '2';
+              flash.style.transition = 'opacity 0.3s';
+              document.body.appendChild(flash);
+              setTimeout(() => {
+                flash.style.opacity = '1';
+                setTimeout(() => {
+                  flash.style.opacity = '0';
+                  setTimeout(() => {
+                    document.body.removeChild(flash);
+                  }, 300);
+                }, 100);
+              }, 100);
 
-                // Show the capture button again
+              setTimeout(() => {
                 captureButton.style.display = 'block';
-              });
+              }, 500);
             }, 100);
+          });
+
+          scene.addEventListener('screenshot-ready', (e) => {
+            const screenshot = e.detail.src;
+
+            // Create a link to download the screenshot
+            const link = document.createElement('a');
+            link.href = screenshot;
+            link.download = 'AR_Cat_Photo.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
           });
         </script>
     </body>

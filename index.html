@@ -66,10 +66,15 @@
           📸 Capture Photo
         </button>
 
+        <!-- Canvas for Photo Capture -->
+        <canvas id="photoCanvas" style="display: none;"></canvas>
+
         <!-- Photo Capture Script -->
         <script>
           const scene = document.querySelector('a-scene');
           const captureButton = document.getElementById('captureButton');
+          const photoCanvas = document.getElementById('photoCanvas');
+          const context = photoCanvas.getContext('2d');
 
           captureButton.addEventListener('click', () => {
             captureButton.style.display = 'none';
@@ -109,13 +114,30 @@
           scene.addEventListener('screenshot-ready', (e) => {
             const screenshot = e.detail.src;
 
-            // Create a link to download the screenshot
-            const link = document.createElement('a');
-            link.href = screenshot;
-            link.download = 'AR_Cat_Photo.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Set canvas dimensions
+            photoCanvas.width = window.innerWidth;
+            photoCanvas.height = window.innerHeight;
+
+            // Draw the camera feed onto the canvas
+            const video = document.querySelector('video');
+            if (video) {
+              context.drawImage(video, 0, 0, photoCanvas.width, photoCanvas.height);
+            }
+
+            // Draw the AR content on top of the camera feed
+            const arImage = new Image();
+            arImage.onload = () => {
+              context.drawImage(arImage, 0, 0);
+              
+              // Create a link to download the combined image
+              const link = document.createElement('a');
+              link.href = photoCanvas.toDataURL('image/png');
+              link.download = 'AR_Cat_Photo.png';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            };
+            arImage.src = screenshot;
           });
         </script>
     </body>
